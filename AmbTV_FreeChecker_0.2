@@ -5,6 +5,7 @@
 // @description        登録した動画エピソードの「無料・有料」をチェックする
 // @author        AbemaTV User
 // @match        https://abema.tv/*
+// @icon        https://www.google.com/s2/favicons?sz=64&domain=abema.tv
 // @run-at        document-idle
 // @grant        none
 // @updateURL        https://github.com/personwritep/AmbTV_FreeChecker/raw/main/AmbTV_FreeChecker.user.js
