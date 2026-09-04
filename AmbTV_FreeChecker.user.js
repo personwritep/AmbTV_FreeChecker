@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        Abema Free Checker
+// @name        AmbTV FreeChecker
 // @namespace        http://tampermonkey.net
 // @version        0.2
 // @description        登録した動画エピソードの「無料・有料」をチェックする
@@ -7,8 +7,8 @@
 // @match        https://abema.tv/*
 // @run-at        document-idle
 // @grant        none
-// @updateURL        https://github.com/personwritep/Abema_Free_Checker/raw/main/Abema_Free_Checker.user.js
-// @downloadURL        https://github.com/personwritep/Abema_Free_Checker/raw/main/Abema_Free_Checker.user.js
+// @updateURL        https://github.com/personwritep/AmbTV_FreeChecker/raw/main/AmbTV_FreeChecker.user.js
+// @downloadURL        https://github.com/personwritep/AmbTV_FreeChecker/raw/main/AmbTV_FreeChecker.user.js
 // ==/UserScript==
 
 (function() {
