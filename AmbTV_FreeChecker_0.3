@@ -17,12 +17,14 @@ let KEY='ABEMA_Watchlist';
 let watchList=JSON.parse(localStorage.getItem(KEY)) || [];
 
 
+
 function checkStatus(){
     if(!window.location.pathname.includes('/video/episode/')) return null;
     let ovl=document.querySelector('.c-vod-EpisodePlayerContainer__appeal-plan-overlay');
     return ovl ? '有料' : '無料';
 
 } // checkStatus()
+
 
 
 let urlParams=new URLSearchParams(window.location.search);
@@ -40,9 +42,12 @@ if(urlParams.get('checker_mode')==='auto'){
 
             localStorage.setItem(KEY, JSON.stringify(list)); }
 
-        let next=urlParams.get('next');
-        if(next){
-            window.location.href=decodeURIComponent(next); }
+
+        let index=(urlParams.get('index'))/1-1;
+        if(index>=0){
+            let Url=watchList[index].url;
+            let nextUrl=Url +'?checker_mode=auto&index='+ index;
+            window.location.href=nextUrl; }
         else{
             document.body.innerHTML=
                 '<div style="position: fixed; top: 0; left: 0; z-index: 100; padding: 80px; '+
@@ -118,13 +123,9 @@ if(mainBtn && menu){
 function startAutoCheck(){
     if(watchList.length===0) return alert('登録作品がありません');
 
-    let firstUrl="";
-    for(let i=watchList.length-1; i>=0; i--){
-        let base=watchList[i].url;
-        if(i===watchList.length-1){
-            firstUrl=`${base}?checker_mode=auto`; }
-        else{
-            firstUrl=`${base}?checker_mode=auto&next=${encodeURIComponent(firstUrl)}`; }}
+    let index=watchList.length-1;
+    let Url=watchList[index].url;
+    let firstUrl=Url +'?checker_mode=auto&index='+ index;
 
     window.open(firstUrl, '_blank');
 
