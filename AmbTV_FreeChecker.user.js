@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV FreeChecker
 // @namespace        http://tampermonkey.net
-// @version        0.3
+// @version        0.4
 // @description        登録した動画エピソードの「無料・有料」をチェックする
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -62,61 +62,82 @@ if(urlParams.get('checker_mode')==='auto'){
 
 
 
-let panel=
-    '<div class="fc_container">'+
-    '<button class="fc_mainBtn">Free Checker</button>'+
-    '<div class="fc_menu">'+
-    '<button class="fc_syncBtn">登録リストの有料・無料をチェックする</button>'+
-    '<button class="fc_addBtn">このページのエピソードをリストに登録</button>'+
-    '<div class="fc_alreadyDiv">✅ このエピソードは登録済みです</div>'+
-    '<div class="fc_listTitle"></div>'+
-    '<div class="fc_listCont"></div>'+
-    '</div>'+
-    '<style>'+
-    '.fc_container { position: fixed; top: 11px; right: 10px; z-index: 100; font-family: Meiryo; '+
-    'text-align: right; } '+
-    '.fc_mainBtn { position: fixed; top: 11px; right: 392px; padding: 11px 12px 9px; '+
-    'font: normal 16px Meiryo; background: #222; color: #fff; border: 1px solid #444; '+
-    'border-radius: 4px; cursor: pointer; } '+
-    '.fc_menu { display: none; padding: 10px 12px; background: #181818; color: #fff; '+
-    'border: 1px solid #444; border-radius: 4px; text-align: left; width: 380px; font-size: 16px; } '+
-    '.fc_syncBtn { width: 100%; padding: 9px 12px 5px; margin-bottom: 10px; border: none; '+
-    'border-radius: 4px; cursor: pointer; font-weight: bold; background: #0077ff; color: #fff; } '+
-    '.fc_addBtn { width: 100%; padding: 9px 12px 5px; margin-bottom: 12px; border: none; '+
-    'border-radius: 4px; cursor: pointer; font-weight: bold; background: #47a85d; color: #fff; display: none; } '+
-    '.fc_alreadyDiv { width: 100%; padding: 7px 30px 5px; margin-bottom: 12px; color: #47a85d; '+
-    'border: 1px solid #47a85d; border-radius: 4px; text-align: left; font-weight: bold; display: none; } '+
-    '.fc_listTitle { color: #ccc; font-weight: bold; margin-bottom: 8px; font-size: 12px; } '+
-    '.fc_listCont { max-height: calc(100vh - 200px); overflow-y: auto; overscroll-behavior: contain; margin-bottom: 5px; '+
-    'border: 1px solid #252525; border-radius: 4px; background: #111; padding: 4px; } '+
-    '.fc_itemRow { display: flex; align-items: center; justify-content: space-between; '+
-    'padding: 6px 4px; border-bottom: 1px solid #222; } '+
-    '.fc_itemRow a.green { color: #38a169; font-weight: bold; } '+
-    '.fc_itemRow a { color: #ddd; text-decoration: none; white-space: nowrap; overflow: hidden; '+
-    'text-overflow: ellipsis; width: 260px; font-size: 13px; } '+
-    '.fc_statusAndDel { display: flex; align-items: center; gap: 6px; } '+
-    '.fc_status { font: normal 13px/16px Meiryo; padding: 5px 4px 3px; border-radius: 4px; } '+
-    '.fc_delBtn { background: none; border: none; cursor: pointer; font: normal 15px Meiryo; '+
-    'padding: 4px 0 0; color: red; } '+
-    '</style>'+
-    '</div>';
+let observer0=new MutationObserver(sw_disp);
+observer0.observe(document.head, { childList: true, subtree: true });
 
-if(!document.querySelector('.fc_container')){
-    document.body.insertAdjacentHTML('beforeend', panel); }
+function sw_disp(){
+    let retry=0;
+    let interval=setInterval(wait_target, 800);
+    function wait_target(){
+        retry++;
+        if(retry>5){ // リトライ制限 4secまで
+            clearInterval(interval); }
+        let header_right=document.querySelector('.com-application-Header__right');
+        if(header_right){
+            clearInterval(interval);
+            set_panel(header_right); }}}
 
 
 
-let mainBtn=document.querySelector('.fc_mainBtn');
-let menu=document.querySelector('.fc_menu');
-if(mainBtn && menu){
-    mainBtn.onclick=()=>{
-        if(menu.style.display!='block'){
-            menu.style.display='block'; }
-        else{
-            menu.style.display='none'; }
+function set_panel(header_right){
+    let panel=
+        '<div class="fc_container">'+
+        '<button class="fc_mainBtn">Free Checker</button>'+
+        '<div class="fc_menu">'+
+        '<button class="fc_syncBtn">登録リストの有料・無料をチェックする</button>'+
+        '<button class="fc_addBtn">このページのエピソードをリストに登録</button>'+
+        '<div class="fc_alreadyDiv">✅ このエピソードは登録済みです</div>'+
+        '<div class="fc_listTitle"></div>'+
+        '<div class="fc_listCont"></div>'+
+        '</div>'+
+        '<style>'+
+        '.fc_container { position: fixed; top: 11px; right: 400px; z-index: 100; font-family: Meiryo; '+
+        'text-align: right; } '+
+        '.fc_mainBtn { padding: 11px 12px 9px; '+
+        'font: normal 16px Meiryo; background: #222; color: #fff; border: 1px solid #444; '+
+        'border-radius: 4px; cursor: pointer; } '+
+        '.fc_menu { position: absolute; right: -390px; top: 0; '+
+        'display: none; padding: 10px 12px; background: #181818; color: #fff; '+
+        'border: 1px solid #444; border-radius: 4px; text-align: left; width: 380px; font-size: 16px; } '+
+        '.fc_syncBtn { width: 100%; padding: 9px 12px 5px; margin-bottom: 10px; border: none; '+
+        'border-radius: 4px; cursor: pointer; font-weight: bold; background: #0077ff; color: #fff; } '+
+        '.fc_addBtn { width: 100%; padding: 9px 12px 5px; margin-bottom: 12px; border: none; '+
+        'border-radius: 4px; cursor: pointer; font-weight: bold; background: #47a85d; color: #fff; display: none; } '+
+        '.fc_alreadyDiv { width: 100%; padding: 7px 30px 5px; margin-bottom: 12px; color: #47a85d; '+
+        'border: 1px solid #47a85d; border-radius: 4px; text-align: left; font-weight: bold; display: none; } '+
+        '.fc_listTitle { color: #ccc; font-weight: bold; margin-bottom: 8px; font-size: 12px; } '+
+        '.fc_listCont { max-height: calc(100vh - 200px); overflow-y: auto; overscroll-behavior: contain; margin-bottom: 5px; '+
+        'border: 1px solid #252525; border-radius: 4px; background: #111; padding: 4px; } '+
+        '.fc_itemRow { display: flex; align-items: center; justify-content: space-between; '+
+        'padding: 6px 4px; border-bottom: 1px solid #222; } '+
+        '.fc_itemRow a.green { color: #38a169; font-weight: bold; } '+
+        '.fc_itemRow a { color: #ddd; text-decoration: none; white-space: nowrap; overflow: hidden; '+
+        'text-overflow: ellipsis; width: 260px; font-size: 13px; } '+
+        '.fc_statusAndDel { display: flex; align-items: center; gap: 6px; } '+
+        '.fc_status { font: normal 13px/16px Meiryo; padding: 5px 4px 3px; border-radius: 4px; } '+
+        '.fc_delBtn { background: none; border: none; cursor: pointer; font: normal 15px Meiryo; '+
+        'padding: 4px 0 0; color: red; } '+
+        '</style>'+
+        '</div>';
 
-        watchList=JSON.parse(localStorage.getItem(KEY)) || [];
-        renderMenu(); }}
+    if(!document.querySelector('.fc_container')){
+        header_right.insertAdjacentHTML('afterbegin', panel); }
+
+
+
+    let mainBtn=document.querySelector('.fc_mainBtn');
+    let menu=document.querySelector('.fc_menu');
+    if(mainBtn && menu){
+        mainBtn.onclick=()=>{
+            if(menu.style.display!='block'){
+                menu.style.display='block'; }
+            else{
+                menu.style.display='none'; }
+
+            watchList=JSON.parse(localStorage.getItem(KEY)) || [];
+            renderMenu(); }}
+
+} // set_panel(header_right)
 
 
 
@@ -138,19 +159,31 @@ function renderMenu(){
     let isEp=window.location.pathname.includes('/video/episode/');
     let normUrl=curUrl.replace(/\/$/, "");
     let isReg=watchList.some(item=>item.url.replace(/\/$/, "")===normUrl);
+    let addBtn=document.querySelector('.fc_addBtn');
+    let alreadyDiv=document.querySelector('.fc_alreadyDiv');
 
 
     let syncBtn=document.querySelector('.fc_syncBtn');
     if(syncBtn){
         syncBtn.onclick=()=>{ startAutoCheck(); }}
 
-    let addBtn=document.querySelector('.fc_addBtn');
-    let alreadyDiv=document.querySelector('.fc_alreadyDiv');
 
-    if(isEp && addBtn && alreadyDiv){
+    function fit_menu(n){
+        if(addBtn && alreadyDiv){
+            if(n==0){ // エピソードではない画面
+                addBtn.style.display='none';
+                alreadyDiv.style.display='none'; }
+            if(n==1){ // 登録可能
+                addBtn.style.display='block';
+                alreadyDiv.style.display='none'; }
+            if(n==2){ // 既に登録済
+                addBtn.style.display='none';
+                alreadyDiv.style.display='block'; }}}
+
+
+    if(isEp){
         if(!isReg){
-            addBtn.style.display='block';
-            alreadyDiv.style.display='none';
+            fit_menu(1);
 
             addBtn.onclick=()=>{
                 let titleEl=document.querySelector('h1') || document.querySelector('[class*="Title"]');
@@ -168,10 +201,10 @@ function renderMenu(){
 
                 renderMenu(); }} // if(!isReg)
         else{
-            addBtn.style.display='none';
-            alreadyDiv.style.display='block'; }
-
-    } // if(isEp && addBtn && alreadyDiv)
+            fit_menu(2); }
+    } // if(isEp)
+    else{
+        fit_menu(0); }
 
 
 
@@ -237,7 +270,7 @@ function renderMenu(){
 
 
 let lastPath=window.location.pathname;
-let observer=new MutationObserver(()=>{
+let observer1=new MutationObserver(()=>{
     if(window.location.pathname !==lastPath){
         lastPath=window.location.pathname;
         let menu=document.querySelector('.fc_menu');
@@ -245,4 +278,18 @@ let observer=new MutationObserver(()=>{
             watchList=JSON.parse(localStorage.getItem(KEY)) || [];
             renderMenu(); }}});
 
-observer.observe(document.head, { childList: true, subtree: true });
+observer1.observe(document.head, { childList: true, subtree: true });
+
+
+
+let observer2=new MutationObserver(not_on_air);
+observer2.observe(document.head, { childList: true, subtree: true });
+
+function not_on_air(){
+    let fc_container=document.querySelector('.fc_container');
+    if(fc_container){
+        let nowPath=window.location.pathname;
+        if(nowPath.includes('/now-on-air/')){
+            fc_container.style.visibility='hidden'; }
+        else{
+            fc_container.style.visibility='visible'; }}}
